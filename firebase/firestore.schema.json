@@ -1,0 +1,185 @@
+{
+  "project": "MediWell App",
+  "version": "1.0-foundation-with-v2-v3-ready-architecture",
+  "sourceDocuments": [
+    "PROJECT_OVERVIEW.md",
+    "database.md",
+    "roles.md",
+    "roadmap.md"
+  ],
+  "architectureNotes": [
+    "Version 1.0 actively implements users and appointments.",
+    "Memberships and QR room access are modeled now so later FlutterFlow pages do not need a data migration.",
+    "QR codes must never contain payment, registration or appointment-booking data.",
+    "QR payloads should contain an accessId and a random qrToken, never a raw Firebase UID."
+  ],
+  "collections": {
+    "users": {
+      "documentId": "Firebase Auth uid",
+      "v1Required": true,
+      "ownerField": "uid",
+      "fields": {
+        "uid": "string",
+        "role": "string: admin | employee | customer",
+        "firstName": "string",
+        "lastName": "string",
+        "email": "string",
+        "phone": "string",
+        "profileImageUrl": "string",
+        "dateOfBirth": "timestamp | null",
+        "createdAt": "timestamp",
+        "updatedAt": "timestamp",
+        "isActive": "boolean"
+      },
+      "flutterFlowNotes": [
+        "Use Firebase Auth UID as document ID.",
+        "Registration may only create role customer.",
+        "Admin changes role manually in Admin UI or Firebase Console."
+      ]
+    },
+    "appointments": {
+      "documentId": "auto generated",
+      "v1Required": true,
+      "ownerField": "customerId",
+      "fields": {
+        "appointmentId": "string",
+        "customerId": "string",
+        "employeeId": "string | null",
+        "serviceType": "string: beratung | wellness | rehasport | other",
+        "serviceName": "string",
+        "date": "timestamp",
+        "startTime": "string HH:mm",
+        "endTime": "string HH:mm",
+        "status": "string: requested | confirmed | cancelled | completed",
+        "notes": "string",
+        "createdAt": "timestamp",
+        "updatedAt": "timestamp"
+      },
+      "statusFlow": {
+        "customerCreate": "requested",
+        "adminOrEmployeeConfirm": "confirmed",
+        "customerCancelAllowedFrom": ["requested", "confirmed"],
+        "adminOrEmployeeComplete": "completed"
+      }
+    },
+    "memberships": {
+      "documentId": "auto generated",
+      "v1Required": false,
+      "v2Prepared": true,
+      "ownerField": "customerId",
+      "fields": {
+        "membershipId": "string",
+        "customerId": "string",
+        "membershipType": "string",
+        "startDate": "timestamp",
+        "endDate": "timestamp",
+        "status": "string: active | paused | cancelled | expired",
+        "priceMonthly": "number",
+        "allowedRooms": "array<string>",
+        "createdAt": "timestamp",
+        "updatedAt": "timestamp"
+      },
+      "flutterFlowNotes": [
+        "Use allowedRooms as a list of rooms document IDs.",
+        "Room access may be generated manually by admin first, later by automation.",
+        "Customers can read only their own membership."
+      ]
+    },
+    "rehab_courses": {
+      "documentId": "auto generated",
+      "v1Required": false,
+      "v2Prepared": true,
+      "fields": {
+        "courseId": "string",
+        "title": "string",
+        "description": "string",
+        "weekday": "string",
+        "startTime": "string HH:mm",
+        "endTime": "string HH:mm",
+        "maxParticipants": "number",
+        "currentParticipants": "number",
+        "trainerId": "string",
+        "roomId": "string",
+        "isActive": "boolean"
+      }
+    },
+    "rooms": {
+      "documentId": "auto generated",
+      "v1Required": false,
+      "v3Prepared": true,
+      "fields": {
+        "roomId": "string",
+        "roomName": "string",
+        "roomType": "string",
+        "description": "string",
+        "isActive": "boolean"
+      },
+      "examples": [
+        "Infrarotkabine",
+        "Massageraum",
+        "Rehasportraum",
+        "Seminarraum",
+        "Sauna",
+        "Salzgrotte"
+      ]
+    },
+    "room_access": {
+      "documentId": "auto generated",
+      "v1Required": false,
+      "v3Prepared": true,
+      "ownerField": "customerId",
+      "fields": {
+        "accessId": "string",
+        "customerId": "string",
+        "roomId": "string",
+        "validFrom": "timestamp",
+        "validUntil": "timestamp",
+        "accessType": "string: membership | appointment | manual",
+        "status": "string: active | expired | blocked",
+        "qrToken": "string random token, not the Firebase UID",
+        "qrCodeVersion": "number",
+        "lastRotatedAt": "timestamp",
+        "createdAt": "timestamp",
+        "updatedAt": "timestamp"
+      },
+      "qrPayload": {
+        "format": "mediwell://access/{accessId}?token={qrToken}&v={qrCodeVersion}",
+        "rules": [
+          "Only use QR for room access.",
+          "Do not use QR for payments.",
+          "Do not use QR for appointment booking.",
+          "Do not use QR for registration."
+        ]
+      }
+    },
+    "access_logs": {
+      "documentId": "auto generated",
+      "v1Required": false,
+      "v3Prepared": true,
+      "ownerField": "customerId",
+      "fields": {
+        "logId": "string",
+        "customerId": "string",
+        "roomId": "string",
+        "timestamp": "timestamp",
+        "accessGranted": "boolean",
+        "reason": "string",
+        "scannedBy": "string employee/admin uid",
+        "deviceId": "string"
+      }
+    },
+    "notifications": {
+      "documentId": "auto generated",
+      "v1Required": false,
+      "fields": {
+        "notificationId": "string",
+        "userId": "string",
+        "title": "string",
+        "message": "string",
+        "type": "string",
+        "isRead": "boolean",
+        "createdAt": "timestamp"
+      }
+    }
+  }
+}
