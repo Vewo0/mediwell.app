@@ -1,15 +1,20 @@
 {
   "project": "MediWell App",
-  "version": "1.0-foundation-with-v2-v3-ready-architecture",
+  "version": "1.0-foundation-with-services-rehasport-seminars-architecture",
   "sourceDocuments": [
     "PROJECT_OVERVIEW.md",
     "database.md",
     "roles.md",
-    "roadmap.md"
+    "roadmap.md",
+    "docs/SERVICE_REHASPORT_SEMINAR_ARCHITECTURE.md"
   ],
   "architectureNotes": [
     "Version 1.0 actively implements users and appointments.",
-    "Memberships and QR room access are modeled now so later FlutterFlow pages do not need a data migration.",
+    "Normal appointment booking is only for single appointments such as massages and health consulting.",
+    "Rehasport is modeled with prescriptions, courses, enrollments and attendance, not as a normal appointment.",
+    "Yoga is modeled as a course.",
+    "Seminars are modeled as events with a fixed price of 120 EUR.",
+    "Memberships and QR room access are modeled so later FlutterFlow pages do not need a data migration.",
     "QR codes must never contain payment, registration or appointment-booking data.",
     "QR payloads should contain an accessId and a random qrToken, never a raw Firebase UID."
   ],
@@ -37,19 +42,53 @@
         "Admin changes role manually in Admin UI or Firebase Console."
       ]
     },
+    "service_catalog": {
+      "documentId": "auto generated or stable service key",
+      "v1Required": true,
+      "purpose": "Defines the services customers may select for normal appointment booking.",
+      "fields": {
+        "serviceId": "string",
+        "serviceType": "string: massage | wellness | beratung | rehasport_intro",
+        "serviceName": "string",
+        "description": "string",
+        "durationMinutes": "number",
+        "price": "number | null",
+        "onlineBookable": "boolean",
+        "requiresEmployee": "boolean",
+        "isActive": "boolean",
+        "createdAt": "timestamp",
+        "updatedAt": "timestamp"
+      },
+      "v1OnlineBookableServices": [
+        "Rücken- und Nackenmassage",
+        "Teilmassage",
+        "Infrarot-Wärmekabine",
+        "Gesundheitsberatung"
+      ],
+      "notes": [
+        "Orthopädischer Rehasport is not a normal online-bookable appointment.",
+        "Seminars are not normal appointments.",
+        "Rehasport Einführung may remain a single appointment if it is used as an initial consultation."
+      ]
+    },
     "appointments": {
       "documentId": "auto generated",
       "v1Required": true,
       "ownerField": "customerId",
+      "purpose": "Single appointments only. Do not use for ongoing Rehasport prescriptions or seminars.",
       "fields": {
         "appointmentId": "string",
         "customerId": "string",
         "employeeId": "string | null",
-        "serviceType": "string: beratung | wellness | rehasport | other",
+        "serviceId": "string | null",
+        "serviceType": "string: massage | wellness | beratung | rehasport_intro | other",
         "serviceName": "string",
         "date": "timestamp",
         "startTime": "string HH:mm",
         "endTime": "string HH:mm",
+        "durationMinutes": "number | null",
+        "price": "number | null",
+        "requiresEmployee": "boolean",
         "status": "string: requested | confirmed | cancelled | completed",
         "notes": "string",
         "createdAt": "timestamp",
@@ -60,6 +99,137 @@
         "adminOrEmployeeConfirm": "confirmed",
         "customerCancelAllowedFrom": ["requested", "confirmed"],
         "adminOrEmployeeComplete": "completed"
+      }
+    },
+    "courses": {
+      "documentId": "auto generated",
+      "v1Required": false,
+      "preparedFor": ["yoga", "rehasport"],
+      "purpose": "Recurring or planned courses. Use this for Yoga and Rehasport course times.",
+      "fields": {
+        "courseId": "string",
+        "courseType": "string: yoga | rehasport",
+        "title": "string",
+        "description": "string",
+        "weekday": "string",
+        "startTime": "string HH:mm",
+        "endTime": "string HH:mm",
+        "trainerId": "string | null",
+        "roomId": "string | null",
+        "maxParticipants": "number",
+        "currentParticipants": "number",
+        "isActive": "boolean",
+        "createdAt": "timestamp",
+        "updatedAt": "timestamp"
+      }
+    },
+    "rehab_prescriptions": {
+      "documentId": "auto generated",
+      "v1Required": false,
+      "v2Prepared": true,
+      "ownerField": "customerId",
+      "purpose": "Stores the doctor's Rehasport prescription for a patient.",
+      "fields": {
+        "prescriptionId": "string",
+        "customerId": "string",
+        "status": "string: active | expired | completed | cancelled",
+        "validFrom": "timestamp",
+        "validUntil": "timestamp",
+        "prescribedUnits": "number | null",
+        "usedUnits": "number",
+        "unitsPerWeek": "number | null",
+        "doctorName": "string",
+        "diagnosisNotes": "string",
+        "documentUrl": "string",
+        "createdBy": "string admin uid",
+        "createdAt": "timestamp",
+        "updatedAt": "timestamp"
+      },
+      "displayRule": "Show course time from courses and prescription expiry from validUntil. Never replace prescription expiry with course endTime."
+    },
+    "rehab_enrollments": {
+      "documentId": "auto generated",
+      "v1Required": false,
+      "v2Prepared": true,
+      "ownerField": "customerId",
+      "purpose": "Connects a patient prescription to a Rehasport course.",
+      "fields": {
+        "enrollmentId": "string",
+        "customerId": "string",
+        "prescriptionId": "string",
+        "courseId": "string",
+        "status": "string: active | paused | ended",
+        "createdAt": "timestamp",
+        "updatedAt": "timestamp"
+      }
+    },
+    "rehab_attendance": {
+      "documentId": "auto generated",
+      "v1Required": false,
+      "v2Prepared": true,
+      "ownerField": "customerId",
+      "purpose": "Stores each attended Rehasport session.",
+      "fields": {
+        "attendanceId": "string",
+        "customerId": "string",
+        "prescriptionId": "string",
+        "courseId": "string",
+        "sessionDate": "timestamp",
+        "startTime": "string HH:mm",
+        "endTime": "string HH:mm",
+        "attended": "boolean",
+        "countsAgainstPrescription": "boolean",
+        "recordedBy": "string employee/admin uid",
+        "createdAt": "timestamp"
+      }
+    },
+    "seminars": {
+      "documentId": "auto generated",
+      "v1Required": false,
+      "preparedFor": "seminars",
+      "purpose": "Seminars are events and always cost 120 EUR.",
+      "fields": {
+        "seminarId": "string",
+        "title": "string",
+        "description": "string",
+        "date": "timestamp",
+        "startTime": "string HH:mm",
+        "endTime": "string HH:mm",
+        "price": "number fixed 120",
+        "maxParticipants": "number",
+        "currentParticipants": "number",
+        "location": "string",
+        "status": "string: planned | open | full | cancelled | completed",
+        "createdAt": "timestamp",
+        "updatedAt": "timestamp"
+      }
+    },
+    "seminar_registrations": {
+      "documentId": "auto generated",
+      "v1Required": false,
+      "preparedFor": "seminar bookings",
+      "ownerField": "customerId",
+      "fields": {
+        "registrationId": "string",
+        "seminarId": "string",
+        "customerId": "string",
+        "status": "string: requested | confirmed | cancelled",
+        "createdAt": "timestamp",
+        "updatedAt": "timestamp"
+      }
+    },
+    "course_bookings": {
+      "documentId": "auto generated",
+      "v1Required": false,
+      "preparedFor": "yoga bookings",
+      "ownerField": "customerId",
+      "fields": {
+        "bookingId": "string",
+        "courseId": "string",
+        "customerId": "string",
+        "status": "string: requested | confirmed | cancelled",
+        "createdAt": "timestamp",
+        "updatedAt": "timestamp"
       }
     },
     "memberships": {
@@ -88,7 +258,7 @@
     "rehab_courses": {
       "documentId": "auto generated",
       "v1Required": false,
-      "v2Prepared": true,
+      "deprecatedBy": "courses where courseType == rehasport",
       "fields": {
         "courseId": "string",
         "title": "string",
@@ -174,9 +344,11 @@
       "fields": {
         "notificationId": "string",
         "userId": "string",
+        "targetRole": "string | null",
         "title": "string",
         "message": "string",
         "type": "string",
+        "relatedAppointmentId": "string | null",
         "isRead": "boolean",
         "createdAt": "timestamp"
       }
