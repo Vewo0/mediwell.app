@@ -1,0 +1,286 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function userPath(uid) {
+      return /databases/$(database)/documents/users/$(uid);
+    }
+
+    function hasUserDoc(uid) {
+      return exists(userPath(uid));
+    }
+
+    function userData(uid) {
+      return get(userPath(uid)).data;
+    }
+
+    function currentUserIsActive() {
+      return signedIn()
+        && hasUserDoc(request.auth.uid)
+        && userData(request.auth.uid).isActive == true;
+    }
+
+    function currentRole() {
+      return currentUserIsActive() ? userData(request.auth.uid).role : null;
+    }
+
+    function isAdmin() {
+      return currentRole() == 'admin';
+    }
+
+    function isEmployee() {
+      return currentRole() == 'employee';
+    }
+
+    function isCustomer() {
+      return currentRole() == 'customer';
+    }
+
+    function isStaff() {
+      return isAdmin() || isEmployee();
+    }
+
+    function isOwnUserDoc(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    function validRole(role) {
+      return role in ['admin', 'employee', 'customer'];
+    }
+
+    function validAppointmentStatus(status) {
+      return status in ['requested', 'confirmed', 'cancelled', 'completed'];
+    }
+
+    function validMembershipStatus(status) {
+      return status in ['active', 'paused', 'cancelled', 'expired'];
+    }
+
+    function validRoomAccessStatus(status) {
+      return status in ['active', 'expired', 'blocked'];
+    }
+
+    function validRoomAccessType(accessType) {
+      return accessType in ['membership', 'appointment', 'manual'];
+    }
+
+    function validUserKeys() {
+      return request.resource.data.keys().hasOnly([
+        'uid',
+        'role',
+        'firstName',
+        'lastName',
+        'email',
+        'phone',
+        'profileImageUrl',
+        'dateOfBirth',
+        'createdAt',
+        'updatedAt',
+        'isActive'
+      ]);
+    }
+
+    function validAppointmentKeys() {
+      return request.resource.data.keys().hasOnly([
+        'appointmentId',
+        'customerId',
+        'employeeId',
+        'serviceType',
+        'serviceName',
+        'date',
+        'startTime',
+        'endTime',
+        'status',
+        'notes',
+        'createdAt',
+        'updatedAt'
+      ]);
+    }
+
+    function validMembershipKeys() {
+      return request.resource.data.keys().hasOnly([
+        'membershipId',
+        'customerId',
+        'membershipType',
+        'startDate',
+        'endDate',
+        'status',
+        'priceMonthly',
+        'allowedRooms',
+        'createdAt',
+        'updatedAt'
+      ]);
+    }
+
+    function validRoomAccessKeys() {
+      return request.resource.data.keys().hasOnly([
+        'accessId',
+        'customerId',
+        'roomId',
+        'validFrom',
+        'validUntil',
+        'accessType',
+        'status',
+        'qrToken',
+        'qrCodeVersion',
+        'lastRotatedAt',
+        'createdAt',
+        'updatedAt'
+      ]);
+    }
+
+    function mayCreateOwnCustomerProfile(userId) {
+      return isOwnUserDoc(userId)
+        && validUserKeys()
+        && request.resource.data.uid == userId
+        && request.resource.data.role == 'customer'
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.isActive == true;
+    }
+
+    function mayUpdateOwnProfile(userId) {
+      return currentUserIsActive()
+        && isOwnUserDoc(userId)
+        && validUserKeys()
+        && request.resource.data.uid == resource.data.uid
+        && request.resource.data.role == resource.data.role
+        && request.resource.data.email == resource.data.email
+        && request.resource.data.isActive == resource.data.isActive
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['firstName', 'lastName', 'phone', 'profileImageUrl', 'dateOfBirth', 'updatedAt']);
+    }
+
+    function validAdminUserWrite() {
+      return validUserKeys()
+        && validRole(request.resource.data.role)
+        && request.resource.data.uid is string
+        && request.resource.data.email is string
+        && request.resource.data.isActive is bool;
+    }
+
+    function appointmentBelongsToCurrentUser() {
+      return currentUserIsActive() && resource.data.customerId == request.auth.uid;
+    }
+
+    function newAppointmentBelongsToCurrentUser() {
+      return currentUserIsActive() && request.resource.data.customerId == request.auth.uid;
+    }
+
+    function validAppointmentWrite() {
+      return validAppointmentKeys()
+        && validAppointmentStatus(request.resource.data.status)
+        && request.resource.data.customerId is string
+        && request.resource.data.serviceType is string
+        && request.resource.data.serviceName is string
+        && request.resource.data.startTime is string
+        && request.resource.data.endTime is string;
+    }
+
+    function mayCustomerCancelAppointment() {
+      return isCustomer()
+        && appointmentBelongsToCurrentUser()
+        && resource.data.status in ['requested', 'confirmed']
+        && request.resource.data.customerId == resource.data.customerId
+        && request.resource.data.status == 'cancelled'
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['status', 'updatedAt']);
+    }
+
+    function membershipBelongsToCurrentUser() {
+      return currentUserIsActive() && resource.data.customerId == request.auth.uid;
+    }
+
+    function validMembershipWrite() {
+      return validMembershipKeys()
+        && validMembershipStatus(request.resource.data.status)
+        && request.resource.data.customerId is string
+        && request.resource.data.membershipType is string
+        && request.resource.data.priceMonthly is number
+        && request.resource.data.allowedRooms is list;
+    }
+
+    function roomAccessBelongsToCurrentUser() {
+      return currentUserIsActive() && resource.data.customerId == request.auth.uid;
+    }
+
+    function validRoomAccessWrite() {
+      return validRoomAccessKeys()
+        && validRoomAccessStatus(request.resource.data.status)
+        && validRoomAccessType(request.resource.data.accessType)
+        && request.resource.data.customerId is string
+        && request.resource.data.roomId is string
+        && request.resource.data.qrToken is string
+        && request.resource.data.qrCodeVersion is int;
+    }
+
+    match /users/{userId} {
+      allow create: if mayCreateOwnCustomerProfile(userId)
+        || (isAdmin()
+          && validAdminUserWrite()
+          && request.resource.data.uid == userId);
+      allow read: if isOwnUserDoc(userId)
+        || isAdmin()
+        || (isEmployee() && resource.data.role == 'customer');
+      allow update: if mayUpdateOwnProfile(userId)
+        || (isAdmin()
+          && validAdminUserWrite()
+          && request.resource.data.uid == userId);
+      allow delete: if isAdmin();
+    }
+
+    match /appointments/{appointmentId} {
+      allow create: if (isStaff() && validAppointmentWrite())
+        || (isCustomer()
+          && validAppointmentWrite()
+          && newAppointmentBelongsToCurrentUser()
+          && request.resource.data.status == 'requested');
+      allow read: if isStaff() || appointmentBelongsToCurrentUser();
+      allow update: if (isStaff() && validAppointmentWrite())
+        || mayCustomerCancelAppointment();
+      allow delete: if isAdmin();
+    }
+
+    match /memberships/{membershipId} {
+      allow create, update: if isAdmin() && validMembershipWrite();
+      allow read: if isAdmin() || isEmployee() || membershipBelongsToCurrentUser();
+      allow delete: if isAdmin();
+    }
+
+    match /rehab_courses/{courseId} {
+      allow read: if currentUserIsActive();
+      allow create, update, delete: if isStaff();
+    }
+
+    match /rooms/{roomId} {
+      allow read: if currentUserIsActive();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /room_access/{accessId} {
+      allow create, update: if isAdmin() && validRoomAccessWrite();
+      allow read: if isStaff() || roomAccessBelongsToCurrentUser();
+      allow delete: if isAdmin();
+    }
+
+    match /access_logs/{logId} {
+      allow create: if isStaff();
+      allow read: if isStaff() || (currentUserIsActive() && resource.data.customerId == request.auth.uid);
+      allow update, delete: if isAdmin();
+    }
+
+    match /notifications/{notificationId} {
+      allow create: if isStaff();
+      allow read, update: if isStaff() || (currentUserIsActive() && resource.data.userId == request.auth.uid);
+      allow delete: if isAdmin();
+    }
+
+    match /app_config/{document=**} {
+      allow read: if currentUserIsActive();
+      allow write: if isAdmin();
+    }
+  }
+}
