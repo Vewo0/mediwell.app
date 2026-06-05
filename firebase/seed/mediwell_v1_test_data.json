@@ -1,0 +1,157 @@
+{
+  "description": "Example Firestore seed data for MediWell App v1.0 with prepared v2 membership and v3 QR room access structures. Replace all demo uid values with real Firebase Authentication user IDs before using in production.",
+  "users": [
+    {
+      "documentId": "admin_demo_uid",
+      "uid": "admin_demo_uid",
+      "role": "admin",
+      "firstName": "MediWell",
+      "lastName": "Admin",
+      "email": "admin@mediwell.example",
+      "phone": "+49 6700 000001",
+      "profileImageUrl": "",
+      "dateOfBirth": null,
+      "createdAt": "2026-06-05T09:00:00.000Z",
+      "updatedAt": "2026-06-05T09:00:00.000Z",
+      "isActive": true
+    },
+    {
+      "documentId": "employee_demo_uid",
+      "uid": "employee_demo_uid",
+      "role": "employee",
+      "firstName": "Mara",
+      "lastName": "Mitarbeiter",
+      "email": "mitarbeiter@mediwell.example",
+      "phone": "+49 6700 000002",
+      "profileImageUrl": "",
+      "dateOfBirth": null,
+      "createdAt": "2026-06-05T09:05:00.000Z",
+      "updatedAt": "2026-06-05T09:05:00.000Z",
+      "isActive": true
+    },
+    {
+      "documentId": "customer_demo_uid",
+      "uid": "customer_demo_uid",
+      "role": "customer",
+      "firstName": "Carla",
+      "lastName": "Kunde",
+      "email": "kunde@mediwell.example",
+      "phone": "+49 6700 000003",
+      "profileImageUrl": "",
+      "dateOfBirth": "1990-04-18T00:00:00.000Z",
+      "createdAt": "2026-06-05T09:10:00.000Z",
+      "updatedAt": "2026-06-05T09:10:00.000Z",
+      "isActive": true
+    }
+  ],
+  "appointments": [
+    {
+      "documentId": "appointment_demo_requested",
+      "appointmentId": "appointment_demo_requested",
+      "customerId": "customer_demo_uid",
+      "employeeId": "employee_demo_uid",
+      "serviceType": "wellness",
+      "serviceName": "Beratungsgespraech",
+      "date": "2026-06-10T00:00:00.000Z",
+      "startTime": "10:00",
+      "endTime": "10:30",
+      "status": "requested",
+      "notes": "Erster Testtermin aus V1.0 Seed-Daten.",
+      "createdAt": "2026-06-05T09:20:00.000Z",
+      "updatedAt": "2026-06-05T09:20:00.000Z"
+    },
+    {
+      "documentId": "appointment_demo_confirmed",
+      "appointmentId": "appointment_demo_confirmed",
+      "customerId": "customer_demo_uid",
+      "employeeId": "employee_demo_uid",
+      "serviceType": "rehasport",
+      "serviceName": "Rehasport Einfuehrung",
+      "date": "2026-06-12T00:00:00.000Z",
+      "startTime": "15:00",
+      "endTime": "15:45",
+      "status": "confirmed",
+      "notes": "Bestaetigter Beispieltermin fuer Dashboard und Listen.",
+      "createdAt": "2026-06-05T09:25:00.000Z",
+      "updatedAt": "2026-06-05T09:25:00.000Z"
+    }
+  ],
+  "memberships": [
+    {
+      "documentId": "membership_demo_active",
+      "membershipId": "membership_demo_active",
+      "customerId": "customer_demo_uid",
+      "membershipType": "Wellness Basis",
+      "startDate": "2026-06-01T00:00:00.000Z",
+      "endDate": "2026-12-31T23:59:59.000Z",
+      "status": "active",
+      "priceMonthly": 49,
+      "allowedRooms": [
+        "room_demo_infrared",
+        "room_demo_rehab"
+      ],
+      "createdAt": "2026-06-05T09:35:00.000Z",
+      "updatedAt": "2026-06-05T09:35:00.000Z"
+    }
+  ],
+  "rooms": [
+    {
+      "documentId": "room_demo_infrared",
+      "roomId": "room_demo_infrared",
+      "roomName": "Infrarotkabine",
+      "roomType": "wellness",
+      "description": "Beispielraum fuer spaeteren QR-Zugang.",
+      "isActive": true
+    },
+    {
+      "documentId": "room_demo_rehab",
+      "roomId": "room_demo_rehab",
+      "roomName": "Rehasportraum",
+      "roomType": "rehasport",
+      "description": "Beispielraum fuer Rehasport und Zutritt.",
+      "isActive": true
+    }
+  ],
+  "room_access": [
+    {
+      "documentId": "access_demo_infrared_customer",
+      "accessId": "access_demo_infrared_customer",
+      "customerId": "customer_demo_uid",
+      "roomId": "room_demo_infrared",
+      "validFrom": "2026-06-01T00:00:00.000Z",
+      "validUntil": "2026-12-31T23:59:59.000Z",
+      "accessType": "membership",
+      "status": "active",
+      "qrToken": "demo-token-change-before-production",
+      "qrCodeVersion": 1,
+      "lastRotatedAt": "2026-06-05T09:40:00.000Z",
+      "createdAt": "2026-06-05T09:40:00.000Z",
+      "updatedAt": "2026-06-05T09:40:00.000Z"
+    }
+  ],
+  "access_logs": [
+    {
+      "documentId": "access_log_demo_granted",
+      "logId": "access_log_demo_granted",
+      "customerId": "customer_demo_uid",
+      "roomId": "room_demo_infrared",
+      "timestamp": "2026-06-05T10:00:00.000Z",
+      "accessGranted": true,
+      "reason": "active_room_access",
+      "scannedBy": "employee_demo_uid",
+      "deviceId": "frontdesk_demo_device"
+    }
+  ],
+  "notifications": [
+    {
+      "documentId": "notification_demo_welcome",
+      "notificationId": "notification_demo_welcome",
+      "userId": "customer_demo_uid",
+      "title": "Willkommen bei MediWell",
+      "message": "Dein MediWell Profil ist bereit.",
+      "type": "info",
+      "isRead": false,
+      "createdAt": "2026-06-05T09:30:00.000Z"
+    }
+  ]
+}
