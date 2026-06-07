@@ -10,6 +10,10 @@ service cloud.firestore {
       return /databases/$(database)/documents/users/$(uid);
     }
 
+    function servicePath(serviceId) {
+      return /databases/$(database)/documents/service_catalog/$(serviceId);
+    }
+
     function hasUserDoc(uid) {
       return exists(userPath(uid));
     }
@@ -37,7 +41,7 @@ service cloud.firestore {
     }
 
     function isCustomer() {
-      return currentRole() == 'customer';
+      return currentRole() in ['customer', 'user'];
     }
 
     function isStaff() {
@@ -49,7 +53,7 @@ service cloud.firestore {
     }
 
     function validRole(role) {
-      return role in ['admin', 'employee', 'customer'];
+      return role in ['admin', 'employee', 'customer', 'user'];
     }
 
     function validAppointmentStatus(status) {
@@ -68,6 +72,26 @@ service cloud.firestore {
       return accessType in ['membership', 'appointment', 'manual'];
     }
 
+    function validPrescriptionStatus(status) {
+      return status in ['active', 'expired', 'completed', 'cancelled'];
+    }
+
+    function validEnrollmentStatus(status) {
+      return status in ['active', 'paused', 'ended'];
+    }
+
+    function validRequestStatus(status) {
+      return status in ['pending', 'processing', 'processed', 'failed', 'cancelled'];
+    }
+
+    function validCourseType(courseType) {
+      return courseType in ['yoga', 'rehasport'];
+    }
+
+    function validSeminarStatus(status) {
+      return status in ['planned', 'open', 'full', 'cancelled', 'completed'];
+    }
+
     function validUserKeys() {
       return request.resource.data.keys().hasOnly([
         'uid',
@@ -78,6 +102,12 @@ service cloud.firestore {
         'phone',
         'profileImageUrl',
         'dateOfBirth',
+        'street',
+        'houseNumber',
+        'postalCode',
+        'city',
+        'country',
+        'billingEmail',
         'createdAt',
         'updatedAt',
         'isActive'
@@ -89,11 +119,15 @@ service cloud.firestore {
         'appointmentId',
         'customerId',
         'employeeId',
+        'serviceId',
         'serviceType',
         'serviceName',
         'date',
         'startTime',
         'endTime',
+        'durationMinutes',
+        'price',
+        'requiresEmployee',
         'status',
         'notes',
         'createdAt',
@@ -133,11 +167,180 @@ service cloud.firestore {
       ]);
     }
 
+    function validNotificationKeys() {
+      return request.resource.data.keys().hasOnly([
+        'notificationId',
+        'userId',
+        'targetRole',
+        'title',
+        'message',
+        'type',
+        'relatedAppointmentId',
+        'isRead',
+        'createdAt',
+        'updatedAt'
+      ]);
+    }
+
+    function validServiceCatalogKeys() {
+      return request.resource.data.keys().hasOnly([
+        'serviceId',
+        'serviceType',
+        'serviceName',
+        'description',
+        'durationMinutes',
+        'price',
+        'onlineBookable',
+        'requiresEmployee',
+        'isActive',
+        'createdAt',
+        'updatedAt'
+      ]);
+    }
+
+    function validCourseKeys() {
+      return request.resource.data.keys().hasOnly([
+        'courseId',
+        'courseType',
+        'title',
+        'description',
+        'weekday',
+        'startTime',
+        'endTime',
+        'trainerId',
+        'roomId',
+        'maxParticipants',
+        'currentParticipants',
+        'isActive',
+        'createdAt',
+        'updatedAt'
+      ]);
+    }
+
+    function validPrescriptionKeys() {
+      return request.resource.data.keys().hasOnly([
+        'prescriptionId',
+        'customerId',
+        'status',
+        'validFrom',
+        'validUntil',
+        'prescribedUnits',
+        'usedUnits',
+        'unitsPerWeek',
+        'doctorName',
+        'diagnosisNotes',
+        'documentUrl',
+        'createdBy',
+        'createdAt',
+        'updatedAt'
+      ]);
+    }
+
+    function validEnrollmentKeys() {
+      return request.resource.data.keys().hasOnly([
+        'enrollmentId',
+        'customerId',
+        'prescriptionId',
+        'courseId',
+        'status',
+        'createdAt',
+        'updatedAt'
+      ]);
+    }
+
+    function validAttendanceKeys() {
+      return request.resource.data.keys().hasOnly([
+        'attendanceId',
+        'customerId',
+        'prescriptionId',
+        'courseId',
+        'sessionDate',
+        'startTime',
+        'endTime',
+        'attended',
+        'countsAgainstPrescription',
+        'recordedBy',
+        'createdAt'
+      ]);
+    }
+
+    function validSeminarKeys() {
+      return request.resource.data.keys().hasOnly([
+        'seminarId',
+        'title',
+        'description',
+        'date',
+        'startTime',
+        'endTime',
+        'price',
+        'maxParticipants',
+        'currentParticipants',
+        'location',
+        'status',
+        'createdAt',
+        'updatedAt'
+      ]);
+    }
+
+    function validBookingKeys() {
+      return request.resource.data.keys().hasOnly([
+        'bookingId',
+        'courseId',
+        'customerId',
+        'status',
+        'createdAt',
+        'updatedAt'
+      ]);
+    }
+
+    function validSeminarRegistrationKeys() {
+      return request.resource.data.keys().hasOnly([
+        'registrationId',
+        'seminarId',
+        'customerId',
+        'status',
+        'createdAt',
+        'updatedAt'
+      ]);
+    }
+
+    function validInvoiceRequestKeys() {
+      return request.resource.data.keys().hasOnly([
+        'invoiceRequestId',
+        'customerId',
+        'appointmentId',
+        'triggerType',
+        'status',
+        'customerFirstName',
+        'customerLastName',
+        'customerEmail',
+        'billingEmail',
+        'street',
+        'houseNumber',
+        'postalCode',
+        'city',
+        'country',
+        'serviceName',
+        'serviceType',
+        'appointmentDate',
+        'appointmentStartTime',
+        'appointmentEndTime',
+        'amount',
+        'currency',
+        'reason',
+        'makeProcessed',
+        'makeProcessedAt',
+        'makeError',
+        'createdAt',
+        'updatedAt'
+      ]);
+    }
+
     function mayCreateOwnCustomerProfile(userId) {
       return isOwnUserDoc(userId)
         && validUserKeys()
         && request.resource.data.uid == userId
-        && request.resource.data.role == 'customer'
+        && request.resource.data.role in ['customer', 'user']
         && request.resource.data.email == request.auth.token.email
         && request.resource.data.isActive == true;
     }
@@ -151,7 +354,20 @@ service cloud.firestore {
         && request.resource.data.email == resource.data.email
         && request.resource.data.isActive == resource.data.isActive
         && request.resource.data.diff(resource.data).affectedKeys()
-          .hasOnly(['firstName', 'lastName', 'phone', 'profileImageUrl', 'dateOfBirth', 'updatedAt']);
+          .hasOnly([
+            'firstName',
+            'lastName',
+            'phone',
+            'profileImageUrl',
+            'dateOfBirth',
+            'street',
+            'houseNumber',
+            'postalCode',
+            'city',
+            'country',
+            'billingEmail',
+            'updatedAt'
+          ]);
     }
 
     function validAdminUserWrite() {
@@ -178,6 +394,26 @@ service cloud.firestore {
         && request.resource.data.serviceName is string
         && request.resource.data.startTime is string
         && request.resource.data.endTime is string;
+    }
+
+    function validCustomerAppointmentService() {
+      return request.resource.data.serviceId is string
+        && exists(servicePath(request.resource.data.serviceId))
+        && get(servicePath(request.resource.data.serviceId)).data.isActive == true
+        && get(servicePath(request.resource.data.serviceId)).data.onlineBookable == true
+        && get(servicePath(request.resource.data.serviceId)).data.serviceType == request.resource.data.serviceType
+        && get(servicePath(request.resource.data.serviceId)).data.serviceName == request.resource.data.serviceName
+        && get(servicePath(request.resource.data.serviceId)).data.durationMinutes == request.resource.data.durationMinutes
+        && get(servicePath(request.resource.data.serviceId)).data.price == request.resource.data.price
+        && get(servicePath(request.resource.data.serviceId)).data.requiresEmployee == request.resource.data.requiresEmployee;
+    }
+
+    function mayCustomerCreateAppointment() {
+      return isCustomer()
+        && validAppointmentWrite()
+        && validCustomerAppointmentService()
+        && newAppointmentBelongsToCurrentUser()
+        && request.resource.data.status == 'requested';
     }
 
     function mayCustomerCancelAppointment() {
@@ -217,6 +453,96 @@ service cloud.firestore {
         && request.resource.data.qrCodeVersion is int;
     }
 
+    function prescriptionBelongsToCurrentUser() {
+      return currentUserIsActive() && resource.data.customerId == request.auth.uid;
+    }
+
+    function enrollmentBelongsToCurrentUser() {
+      return currentUserIsActive() && resource.data.customerId == request.auth.uid;
+    }
+
+    function attendanceBelongsToCurrentUser() {
+      return currentUserIsActive() && resource.data.customerId == request.auth.uid;
+    }
+
+    function validServiceCatalogWrite() {
+      return validServiceCatalogKeys()
+        && request.resource.data.serviceId is string
+        && request.resource.data.serviceType is string
+        && request.resource.data.serviceName is string
+        && request.resource.data.durationMinutes is number
+        && request.resource.data.onlineBookable is bool
+        && request.resource.data.requiresEmployee is bool
+        && request.resource.data.isActive is bool;
+    }
+
+    function validCourseWrite() {
+      return validCourseKeys()
+        && validCourseType(request.resource.data.courseType)
+        && request.resource.data.title is string
+        && request.resource.data.startTime is string
+        && request.resource.data.endTime is string
+        && request.resource.data.isActive is bool;
+    }
+
+    function validPrescriptionWrite() {
+      return validPrescriptionKeys()
+        && validPrescriptionStatus(request.resource.data.status)
+        && request.resource.data.customerId is string
+        && request.resource.data.usedUnits is number
+        && request.resource.data.createdBy is string;
+    }
+
+    function validEnrollmentWrite() {
+      return validEnrollmentKeys()
+        && validEnrollmentStatus(request.resource.data.status)
+        && request.resource.data.customerId is string
+        && request.resource.data.prescriptionId is string
+        && request.resource.data.courseId is string;
+    }
+
+    function validAttendanceWrite() {
+      return validAttendanceKeys()
+        && request.resource.data.customerId is string
+        && request.resource.data.prescriptionId is string
+        && request.resource.data.courseId is string
+        && request.resource.data.attended is bool
+        && request.resource.data.countsAgainstPrescription is bool
+        && request.resource.data.recordedBy == request.auth.uid;
+    }
+
+    function validSeminarWrite() {
+      return validSeminarKeys()
+        && validSeminarStatus(request.resource.data.status)
+        && request.resource.data.price == 120
+        && request.resource.data.title is string;
+    }
+
+    function validBookingWrite() {
+      return validBookingKeys()
+        && request.resource.data.customerId is string
+        && request.resource.data.courseId is string
+        && request.resource.data.status in ['requested', 'confirmed', 'cancelled'];
+    }
+
+    function validSeminarRegistrationWrite() {
+      return validSeminarRegistrationKeys()
+        && request.resource.data.customerId is string
+        && request.resource.data.seminarId is string
+        && request.resource.data.status in ['requested', 'confirmed', 'cancelled'];
+    }
+
+    function validInvoiceRequestWrite() {
+      return validInvoiceRequestKeys()
+        && validRequestStatus(request.resource.data.status)
+        && request.resource.data.triggerType in ['appointment_completed', 'late_cancellation']
+        && request.resource.data.customerId is string
+        && request.resource.data.amount is number
+        && request.resource.data.amount > 0
+        && request.resource.data.currency == 'EUR'
+        && request.resource.data.makeProcessed is bool;
+    }
+
     match /users/{userId} {
       allow create: if mayCreateOwnCustomerProfile(userId)
         || (isAdmin()
@@ -224,7 +550,7 @@ service cloud.firestore {
           && request.resource.data.uid == userId);
       allow read: if isOwnUserDoc(userId)
         || isAdmin()
-        || (isEmployee() && resource.data.role == 'customer');
+        || (isEmployee() && resource.data.role in ['customer', 'user']);
       allow update: if mayUpdateOwnProfile(userId)
         || (isAdmin()
           && validAdminUserWrite()
@@ -232,15 +558,18 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    match /service_catalog/{serviceId} {
+      allow read: if currentUserIsActive() && resource.data.isActive == true;
+      allow create, update: if isAdmin()
+        && validServiceCatalogWrite()
+        && request.resource.data.serviceId == serviceId;
+      allow delete: if isAdmin();
+    }
+
     match /appointments/{appointmentId} {
-      allow create: if (isStaff() && validAppointmentWrite())
-        || (isCustomer()
-          && validAppointmentWrite()
-          && newAppointmentBelongsToCurrentUser()
-          && request.resource.data.status == 'requested');
+      allow create: if (isStaff() && validAppointmentWrite()) || mayCustomerCreateAppointment();
       allow read: if isStaff() || appointmentBelongsToCurrentUser();
-      allow update: if (isStaff() && validAppointmentWrite())
-        || mayCustomerCancelAppointment();
+      allow update: if (isStaff() && validAppointmentWrite()) || mayCustomerCancelAppointment();
       allow delete: if isAdmin();
     }
 
@@ -250,9 +579,69 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    match /courses/{courseId} {
+      allow read: if currentUserIsActive() && resource.data.isActive == true;
+      allow create, update: if isAdmin()
+        && validCourseWrite()
+        && request.resource.data.courseId == courseId;
+      allow delete: if isAdmin();
+    }
+
+    match /rehab_prescriptions/{prescriptionId} {
+      allow create, update: if isAdmin()
+        && validPrescriptionWrite()
+        && request.resource.data.prescriptionId == prescriptionId;
+      allow read: if isStaff() || prescriptionBelongsToCurrentUser();
+      allow delete: if isAdmin();
+    }
+
+    match /rehab_enrollments/{enrollmentId} {
+      allow create, update: if isAdmin()
+        && validEnrollmentWrite()
+        && request.resource.data.enrollmentId == enrollmentId;
+      allow read: if isStaff() || enrollmentBelongsToCurrentUser();
+      allow delete: if isAdmin();
+    }
+
+    match /rehab_attendance/{attendanceId} {
+      allow create: if isStaff()
+        && validAttendanceWrite()
+        && request.resource.data.attendanceId == attendanceId;
+      allow read: if isStaff() || attendanceBelongsToCurrentUser();
+      allow update, delete: if isAdmin();
+    }
+
     match /rehab_courses/{courseId} {
       allow read: if currentUserIsActive();
-      allow create, update, delete: if isStaff();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /seminars/{seminarId} {
+      allow read: if currentUserIsActive();
+      allow create, update: if isAdmin()
+        && validSeminarWrite()
+        && request.resource.data.seminarId == seminarId;
+      allow delete: if isAdmin();
+    }
+
+    match /seminar_registrations/{registrationId} {
+      allow create: if isCustomer()
+        && validSeminarRegistrationWrite()
+        && request.resource.data.registrationId == registrationId
+        && request.resource.data.customerId == request.auth.uid
+        && request.resource.data.status == 'requested';
+      allow read: if isStaff() || (currentUserIsActive() && resource.data.customerId == request.auth.uid);
+      allow update, delete: if isAdmin();
+    }
+
+    match /course_bookings/{bookingId} {
+      allow create: if isCustomer()
+        && validBookingWrite()
+        && request.resource.data.bookingId == bookingId
+        && request.resource.data.customerId == request.auth.uid
+        && request.resource.data.status == 'requested';
+      allow read: if isStaff() || (currentUserIsActive() && resource.data.customerId == request.auth.uid);
+      allow update, delete: if isAdmin();
     }
 
     match /rooms/{roomId} {
@@ -261,7 +650,9 @@ service cloud.firestore {
     }
 
     match /room_access/{accessId} {
-      allow create, update: if isAdmin() && validRoomAccessWrite();
+      allow create, update: if isAdmin()
+        && validRoomAccessWrite()
+        && request.resource.data.accessId == accessId;
       allow read: if isStaff() || roomAccessBelongsToCurrentUser();
       allow delete: if isAdmin();
     }
@@ -272,9 +663,24 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
 
+    match /invoice_requests/{invoiceRequestId} {
+      allow create: if isStaff()
+        && validInvoiceRequestWrite()
+        && request.resource.data.invoiceRequestId == invoiceRequestId;
+      allow read, update: if isAdmin() && validInvoiceRequestKeys();
+      allow delete: if isAdmin();
+    }
+
     match /notifications/{notificationId} {
-      allow create: if isStaff();
-      allow read, update: if isStaff() || (currentUserIsActive() && resource.data.userId == request.auth.uid);
+      allow create: if isStaff() && validNotificationKeys();
+      allow read: if isStaff()
+        || (currentUserIsActive()
+          && resource.data.userId == request.auth.uid
+          && resource.data.targetRole == null);
+      allow update: if isStaff()
+        || (currentUserIsActive()
+          && resource.data.userId == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isRead', 'updatedAt']));
       allow delete: if isAdmin();
     }
 
