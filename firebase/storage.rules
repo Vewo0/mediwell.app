@@ -11,7 +11,7 @@ service firebase.storage {
     }
 
     match /profile_images/{userId}/{fileName} {
-      allow read: if signedIn();
+      allow read: if isOwnProfileImage(userId);
       allow write: if isOwnProfileImage(userId)
         && request.resource.size < 5 * 1024 * 1024
         && request.resource.contentType.matches('image/.*');
