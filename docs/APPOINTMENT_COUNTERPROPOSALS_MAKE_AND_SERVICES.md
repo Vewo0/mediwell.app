@@ -1,16 +1,21 @@
-# MediWell/Nam Wellness - Leistungen, Make und Terminvorschläge
+# MediWell - Leistungen, Make und Terminvorschlaege
 
 ## Ziel
 
-Diese Datei dokumentiert drei neue Arbeitsbereiche:
+Diese Datei dokumentiert drei neue Arbeitsbereiche fuer Version 1.x:
 
 1. Leistungen 1:1 als Service-Katalog pflegen
 2. Make-Automatisierung vorbereiten
 3. Terminanfragen mit Gegenvorschlag abbilden
 
-## 1. Leistungen 1:1 übernehmen
+Quelle fuer Leistungen und Preise:
 
-Leistungen sollen nicht frei eingetippt werden. Sie gehören in einen Service-Katalog.
+- https://www.mediwell.online/unsere-angebote
+- Abgerufen und geprueft am 09.06.2026
+
+## 1. Leistungen 1:1 uebernehmen
+
+Leistungen sollen nicht frei eingetippt werden. Sie gehoeren in einen Service-Katalog.
 
 Collection:
 
@@ -26,71 +31,148 @@ Felder:
 - `variantName`
 - `description`
 - `durationMinutes`
+- `durationLabel`
 - `price`
+- `priceLabel`
 - `onlineBookable`
 - `requiresEmployee`
+- `isPackage`
+- `packageValidityWeeks`
+- `packageItems`
 - `isActive`
 - `sortOrder`
+- `sourceUrl`
 - `createdAt`
 - `updatedAt`
 
-## Beispiel für Nam's Wellness Massage
-
 Business:
 
-- `businessId = nams_wellness_massage`
-- Name: `Nam's Wellness Massage`
-- Kategorie: Thai-Massage / Wellness Massage
-- Adresse: `Nahestraße 40, 55593 Rüdesheim`
-- Telefon: `01512 3234610`
+- `businessId = mediwell_studio`
+- Name: `MediWell.Studio`
+- Website: `https://www.mediwell.online/unsere-angebote`
+- Adresse laut Website-Karte: `Winterburger Str. 22, 55595 Bockenau, Deutschland`
+- Telefon laut Website: `+4916096285823`
 
-### Service-Katalog aus sichtbarer Preisliste
+## Service-Katalog MediWell.Studio
 
-Die Screenshots zeigen zwei Preislistenstände. Die neuere Google-Ansicht scheint höhere Preise zu zeigen. Für die App soll ein Admin die Preise später bearbeiten können.
+### Kategorie: Massagen & Wellness
 
-Vorläufige Struktur:
+#### Einzelangebote
 
-#### Thai-Massage
+1. `Rücken- & Nackenmassage`
+   - Dauer: 30 Minuten
+   - Preis: 45 EUR
+   - Beschreibung: `Lösen Sie Verspannungen gezielt mit unserer 30-minütigen Rücken- & Nackenmassage.`
+   - Online buchbar: Ja
+   - Mitarbeiter erforderlich: Ja
 
-- Thai-Massage Ganzkörper 120 Min, 95 EUR
-- Thai-Massage Ganzkörper 90 Min, 75 EUR
-- Thai-Massage Rücken-Nacken 60 Min, 55 EUR
-- Thai-Massage Rücken-Nacken 30 Min, 30 EUR
+2. `Teilmassage`
+   - Dauer: 20 Minuten
+   - Preis: 39 EUR
+   - Beschreibung: `Revitalisierende Teilmassage, die gezielt auf individuelle Bedürfnisse eingeht.`
+   - Online buchbar: Ja
+   - Mitarbeiter erforderlich: Ja
 
-#### Aroma-Massage
+3. `Aromaöl-Rückenmassage`
+   - Dauer: 30 Minuten
+   - Preis: 59 EUR
+   - Beschreibung: `Entspannende Aromaöl-Rückenmassage.`
+   - Online buchbar: Ja
+   - Mitarbeiter erforderlich: Ja
 
-- Aroma-Massage Ganzkörper 120 Min, 105 EUR
-- Aroma-Massage Ganzkörper 90 Min, 85 EUR
-- Aroma-Massage Rücken-Nacken 60 Min, 65 EUR
-- Aroma-Massage Rücken-Nacken 30 Min, 37 EUR
+4. `Hot Stone Rückenmassage`
+   - Dauer: 45 Minuten
+   - Preis: 68 EUR
+   - Beschreibung: `Wärme und Entspannung für den Rücken.`
+   - Online buchbar: Ja
+   - Mitarbeiter erforderlich: Ja
 
-#### Hotstone Massage
+5. `Hot Stone Ganzkörpermassage`
+   - Dauer: 60 Minuten
+   - Preis: 89 EUR
+   - Beschreibung: `Tiefe Entspannung mit Hot Stone Ganzkörpermassage.`
+   - Online buchbar: Ja
+   - Mitarbeiter erforderlich: Ja
 
-- Hotstone Massage Ganzkörper 120 Min, 110 EUR
-- Hotstone Massage Ganzkörper 90 Min, 90 EUR
-- Hotstone Massage Rücken-Nacken 60 Min, 66 EUR
-- Hotstone Massage Rücken-Nacken 30 Min, 42 EUR
+6. `Honig-Entgiftungsmassage`
+   - Dauer: 60 Minuten
+   - Preis: 89 EUR
+   - Beschreibung: `Reinigende und revitalisierende Honig-Entgiftungsmassage.`
+   - Online buchbar: Ja
+   - Mitarbeiter erforderlich: Ja
 
-#### Öl-Massage
+7. `Fußreflexzonenmassage`
+   - Dauer: 45 Minuten
+   - Preis: 55 EUR
+   - Beschreibung: `Fußreflexzonenmassage zur Förderung des Wohlbefindens.`
+   - Online buchbar: Ja
+   - Mitarbeiter erforderlich: Ja
 
-- Öl-Massage Ganzkörper 120 Min, 95 EUR
-- Öl-Massage Ganzkörper 90 Min, 75 EUR
-- Öl-Massage Rücken-Nacken 60 Min, 50 EUR
-- Öl-Massage Rücken-Nacken 30 Min, 30 EUR
+8. `Faszien- & Tiefenregeneration`
+   - Dauer: 70 bis 80 Minuten
+   - Dauer fuer App-Logik: 80 Minuten
+   - Preis: 119 EUR
+   - Beschreibung: `Intensive Regeneration für die Muskulatur.`
+   - Online buchbar: Ja
+   - Mitarbeiter erforderlich: Ja
 
-Hinweis:
+9. `Premium Wellness & Regeneration`
+   - Dauer: 80 Minuten
+   - Preis: 99 EUR
+   - Beschreibung: `Premium Wellness & Regeneration als Verwöhnzeit.`
+   - Online buchbar: Ja
+   - Mitarbeiter erforderlich: Ja
 
-Einige Preise auf den Bildern sind unscharf. Vor Live-Nutzung muss der Admin die Preise im Service-Katalog prüfen.
+#### Wellness-Pakete
+
+Pakete sind fuer die App wichtig, aber in Version 1.0 besser nicht direkt als normaler Einzeltermin buchbar. Sie sollen als Angebot sichtbar sein und spaeter als Mitgliedschaft/Paketlogik ausgebaut werden.
+
+10. `3er Paket Rücken- & Nackenmassage + Infrarot-Wärmekabine`
+    - Preis: 129 EUR
+    - Inhalt: `3 × Rücken- & Nackenmassage (30 Min.)` und `3 × Infrarot-Wärmekabine (15 Min.)`
+    - Gültigkeit: 6 Wochen
+    - Ersparnis laut Website: 6 EUR
+    - Online buchbar: Nein in V1
+    - Mitarbeiter erforderlich: Ja
+    - `isPackage = true`
+
+11. `5er Paket Rücken- & Nackenmassage + Infrarot-Wärmekabine`
+    - Preis: 210 EUR
+    - Inhalt: `5 × Rücken- & Nackenmassage (30 Min.)` und `5 × Infrarot-Wärmekabine (15 Min.)`
+    - Gültigkeit: 8 Wochen
+    - Ersparnis laut Website: 15 EUR
+    - Online buchbar: Nein in V1
+    - Mitarbeiter erforderlich: Ja
+    - `isPackage = true`
+
+12. `8er Paket Rücken- & Nackenmassage + Infrarot-Wärmekabine`
+    - Preis: 320 EUR
+    - Inhalt: `8 × Rücken- & Nackenmassage (30 Min.)` und `8 × Infrarot-Wärmekabine (15 Min.)`
+    - Gültigkeit: 12 Wochen
+    - Ersparnis laut Website: 40 EUR
+    - Online buchbar: Nein in V1
+    - Mitarbeiter erforderlich: Ja
+    - `isPackage = true`
+
+## Wichtige Buchungsregel
+
+Bei normalen Terminanfragen sollen Kunden nur Leistungen buchen koennen, bei denen gilt:
+
+- `isActive = true`
+- `onlineBookable = true`
+- `isPackage = false`
+
+Pakete sollen in V1 sichtbar sein, aber nicht als einzelner Termin direkt gebucht werden. Fuer Pakete braucht die App spaeter Paketguthaben oder eine kleine Membership-Logik.
 
 ## 2. Make-Automatisierung strukturieren
 
-Die App soll nicht direkt Rechnungen versenden. Sie erstellt nur Datensätze für Make.
+Die App soll nicht direkt Rechnungen versenden. Sie erstellt nur Datensaetze fuer Make.
 
 Collection:
 
 `invoice_requests`
 
-Make liest neue Datensätze mit:
+Make liest neue Datensaetze mit:
 
 - `status = pending`
 - `makeProcessed = false`
@@ -125,9 +207,9 @@ Kunde fragt einen Termin an. Admin kann ihn nicht annehmen, weil zu dieser Uhrze
 
 1. Kunde erstellt Terminanfrage.
 2. Termin bekommt Status `requested`.
-3. Admin öffnet Terminanfrage.
-4. Admin wählt `Gegenvorschlag senden`.
-5. Admin wählt neues Datum, neue Startzeit, neue Endzeit.
+3. Admin oeffnet Terminanfrage.
+4. Admin waehlt `Gegenvorschlag senden`.
+5. Admin waehlt neues Datum, neue Startzeit und neue Endzeit.
 6. Admin schreibt optional eine Nachricht.
 7. App erstellt einen Datensatz in `appointment_proposals`.
 8. Appointment bekommt Status `counter_proposed`.
@@ -178,7 +260,7 @@ Wenn Kunde auf `Annehmen` klickt:
 
 1. `appointment_proposals.status = accepted`
 2. `respondedAt = aktueller Zeitpunkt`
-3. Appointment übernimmt:
+3. Appointment uebernimmt:
    - `date = proposedDate`
    - `startTime = proposedStartTime`
    - `endTime = proposedEndTime`
@@ -211,7 +293,7 @@ Buttons:
 - `Absagen`
 - `Gegenvorschlag senden`
 
-Bei `Gegenvorschlag senden` öffnet sich ein Modal:
+Bei `Gegenvorschlag senden` oeffnet sich ein Modal:
 
 - Datum
 - Startzeit
@@ -227,7 +309,7 @@ Wenn Appointment Status `counter_proposed` ist:
 
 Zeige Karte:
 
-- Ursprünglicher Wunsch
+- Urspruenglicher Wunsch
 - Neuer Vorschlag
 - Nachricht vom Admin
 - Button `Annehmen`
@@ -238,33 +320,33 @@ Zeige Karte:
 Eine eigene `appointment_proposals` Collection ist besser als nur Felder direkt im Termin, weil:
 
 - Verlauf nachvollziehbar bleibt
-- später mehrere Vorschläge möglich sind
-- Kunde/ Admin-Kommunikation klarer ist
+- spaeter mehrere Vorschlaege moeglich sind
+- Kunde/Admin-Kommunikation klarer ist
 - Make/Benachrichtigungen leichter werden
 
 ## Sicherheitsregel
 
 Customer darf:
 
-- eigene Vorschläge lesen
-- eigene Vorschläge annehmen oder ablehnen
+- eigene Vorschlaege lesen
+- eigene Vorschlaege annehmen oder ablehnen
 
 Customer darf nicht:
 
-- vorgeschlagene Uhrzeit ändern
-- Vorschlag für fremden Termin lesen
-- Vorschlag für fremden Termin beantworten
+- vorgeschlagene Uhrzeit aendern
+- Vorschlag fuer fremden Termin lesen
+- Vorschlag fuer fremden Termin beantworten
 
 Admin/Employee darf:
 
-- Vorschläge erstellen
+- Vorschlaege erstellen
 - eigene Terminanfragen verwalten
 
-## Empfehlung für heute
+## Empfehlung fuer heute
 
 Heute bauen:
 
-1. Service-Katalog prüfen und sichtbar machen
+1. Service-Katalog mit den echten MediWell-Angeboten aus `https://www.mediwell.online/unsere-angebote`
 2. Admin-Gegenvorschlag bei Terminanfragen
 3. Customer Antwort auf Gegenvorschlag
 4. Make-Automatisierung nur als `invoice_requests` Struktur belassen
@@ -275,3 +357,4 @@ Noch nicht bauen:
 - automatische Steuerlogik
 - mehrere Vorschlagsrunden
 - Chat-System
+- Paketguthaben fuer Wellness-Pakete
